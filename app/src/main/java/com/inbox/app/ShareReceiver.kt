@@ -1,20 +1,23 @@
 package com.inbox.app
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import java.io.BufferedReader
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import java.io.DataOutputStream
 import java.io.InputStream
-import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * 分享接收 Activity — 从任何 App 接收分享内容并自动发送到收件箱。
- * 透明主题，用户无感知，完成后自动关闭。
+ * 静默分享接收 — 无界面、无 Toast。
+ * 发送成功后弹出通知，写入发送记录。
  */
 class ShareReceiver : AppCompatActivity() {
 
@@ -22,69 +25,92 @@ class ShareReceiver : AppCompatActivity() {
         private const val API_URL = "https://inbox.oolool.com/api/inbox/share"
         private const val BOUNDARY = "----InboxBoundary"
         private const val LINE_END = "\r\n"
+        private const val CHANNEL_ID = "inbox_share"
+        private const val NOTIF_ID = 1001
     }
+
+    private lateinit var db: InboxDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        db = InboxDatabase(this)
+        createNotificationChannel()
 
         when (intent?.action) {
             Intent.ACTION_SEND -> handleSingleShare(intent!!)
             Intent.ACTION_SEND_MULTIPLE -> handleMultiShare(intent!!)
-            else -> {
-                Toast.makeText(this, "不支持的内容类型", Toast.LENGTH_SHORT).show()
-                finish()
-            }
+            else -> finish()
+        }
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID, "收件箱分享",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply { description = "收件箱文件接收通知" }
+            (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
+                .createNotificationChannel(channel)
+        }
+    }
+
+    private fun sendNotification(title: String, text: String, success: Boolean) {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pi = PendingIntent.getActivity(this, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+        val icon = if (success) android.R.drawable.stat_sys_upload_done
+                   else android.R.drawable.stat_sys_warning
+
+        val notif = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(icon)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setAutoCancel(true)
+            .setContentIntent(pi)
+            .build()
+
+        try {
+            NotificationManagerCompat.from(this).notify(NOTIF_ID, notif)
+        } catch (_: SecurityException) {
+            // 没有通知权限，静默忽略
         }
     }
 
     private fun handleSingleShare(intent: Intent) {
         val type = intent.type ?: "text/plain"
-
         if (type.startsWith("text/")) {
-            // 文字/链接分享
             val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT) ?: ""
-            val sharedSubject = intent.getStringExtra(Intent.EXTRA_SUBJECT) ?: ""
-            val text = if (sharedSubject.isNotEmpty()) {
-                "$sharedSubject\n\n$sharedText"
-            } else {
-                sharedText
-            }
-
-            if (text.isBlank()) {
-                Toast.makeText(this, "内容为空", Toast.LENGTH_SHORT).show()
-                finish()
-                return
-            }
+            val subject = intent.getStringExtra(Intent.EXTRA_SUBJECT) ?: ""
+            val text = if (subject.isNotEmpty()) "$subject\n\n$sharedText" else sharedText
+            if (text.isBlank()) { finish(); return }
 
             Thread {
-                val result = postText(text)
+                val ok = postText(text)
+                val name = text.take(30).replace("\n", " ") + ".md"
+                db.insert(HistoryEntry(
+                    fileName = name, fileType = "text",
+                    fileSize = text.length.toLong(), success = ok
+                ))
                 runOnUiThread {
-                    if (result) {
-                        Toast.makeText(this, "✅ 已存入收件箱", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(this, "❌ 存入失败", Toast.LENGTH_SHORT).show()
-                    }
+                    sendNotification(
+                        if (ok) "📥 已存入收件箱" else "❌ 存入失败",
+                        name, ok
+                    )
                     finish()
                 }
             }.start()
-
         } else {
-            // 文件分享（单文件）
-            val uri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-            if (uri == null) {
-                Toast.makeText(this, "文件不存在", Toast.LENGTH_SHORT).show()
-                finish()
-                return
-            }
-
+            val uri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM) ?: run { finish(); return }
             Thread {
-                val result = postFile(uri, type)
+                val fileName = getFileName(uri, type)
+                val size = try { contentResolver.openInputStream(uri)?.available() ?: 0 } catch(_: Exception) { 0 }
+                val ok = postFile(uri, type)
+                db.insert(HistoryEntry(fileName = fileName, fileType = type, fileSize = size.toLong(), success = ok))
                 runOnUiThread {
-                    if (result) {
-                        Toast.makeText(this, "✅ 已存入收件箱", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(this, "❌ 存入失败", Toast.LENGTH_SHORT).show()
-                    }
+                    sendNotification(if (ok) "📥 已存入收件箱" else "❌ 存入失败", fileName, ok)
                     finish()
                 }
             }.start()
@@ -92,59 +118,37 @@ class ShareReceiver : AppCompatActivity() {
     }
 
     private fun handleMultiShare(intent: Intent) {
-        val uris = intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
-        if (uris.isNullOrEmpty()) {
-            Toast.makeText(this, "没有文件", Toast.LENGTH_SHORT).show()
-            finish()
-            return
-        }
-
-        var successCount = 0
+        val uris = intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM) ?: run { finish(); return }
+        var success = 0
         Thread {
             for (uri in uris) {
                 val type = contentResolver.getType(uri) ?: "application/octet-stream"
-                if (postFile(uri, type)) {
-                    successCount++
-                }
+                val fileName = getFileName(uri, type)
+                val size = try { contentResolver.openInputStream(uri)?.available() ?: 0 } catch(_: Exception) { 0 }
+                val ok = postFile(uri, type)
+                db.insert(HistoryEntry(fileName = fileName, fileType = type, fileSize = size.toLong(), success = ok))
+                if (ok) success++
             }
-            val finalCount = successCount
             val total = uris.size
+            val finalSuccess = success
             runOnUiThread {
-                val msg = if (finalCount == total) {
-                    "✅ 已存入 $total 项"
-                } else {
-                    "⚠️ 存入 $finalCount/$total 项"
-                }
-                Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+                sendNotification("📥 已存入 $finalSuccess/$total 项", "收件箱收到 $total 个文件", finalSuccess == total)
                 finish()
             }
         }.start()
     }
 
-    private fun postText(text: String): Boolean {
-        try {
-            val formData = buildTextFormData(text)
-            return httpPost(formData)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return false
-        }
-    }
+    private fun postText(text: String): Boolean = try {
+        httpPost(buildTextFormData(text))
+    } catch (_: Exception) { false }
 
-    private fun postFile(uri: Uri, mimeType: String): Boolean {
-        try {
-            val inputStream = contentResolver.openInputStream(uri) ?: return false
-            val fileName = getFileName(uri, mimeType)
-            val formData = buildFileFormData(inputStream, fileName, mimeType)
-            inputStream.close()
-            return httpPost(formData)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return false
-        }
-    }
+    private fun postFile(uri: Uri, mimeType: String): Boolean = try {
+        contentResolver.openInputStream(uri)?.use { stream ->
+            httpPost(buildFileFormData(stream, getFileName(uri, mimeType), mimeType))
+        } ?: false
+    } catch (_: Exception) { false }
 
-    private fun httpPost(formData: ByteArray): Boolean {
+    private fun httpPost(data: ByteArray): Boolean {
         val url = URL(API_URL)
         val conn = url.openConnection() as HttpURLConnection
         conn.requestMethod = "POST"
@@ -153,52 +157,39 @@ class ShareReceiver : AppCompatActivity() {
         conn.setRequestProperty("Connection", "close")
         conn.connectTimeout = 30000
         conn.readTimeout = 30000
-
-        val outputStream = DataOutputStream(conn.outputStream)
-        outputStream.write(formData)
-        outputStream.flush()
-        outputStream.close()
-
-        val responseCode = conn.responseCode
-        conn.disconnect()
-        return responseCode == 200
+        DataOutputStream(conn.outputStream).use { it.write(data) }
+        return conn.responseCode == 200
     }
 
-    private fun buildTextFormData(text: String): ByteArray {
-        val sb = StringBuilder()
-        sb.append("--$BOUNDARY$LINE_END")
-        sb.append("Content-Disposition: form-data; name=\"text\"$LINE_END")
-        sb.append("Content-Type: text/plain; charset=UTF-8$LINE_END")
-        sb.append(LINE_END)
-        sb.append(text)
-        sb.append("$LINE_END--$BOUNDARY--$LINE_END")
-        return sb.toString().toByteArray(Charsets.UTF_8)
-    }
+    private fun buildTextFormData(text: String): ByteArray = buildString {
+        append("--$BOUNDARY$LINE_END")
+        append("Content-Disposition: form-data; name=\"text\"$LINE_END")
+        append("Content-Type: text/plain; charset=UTF-8$LINE_END")
+        append(LINE_END)
+        append(text)
+        append("$LINE_END--$BOUNDARY--$LINE_END")
+    }.toByteArray(Charsets.UTF_8)
 
     private fun buildFileFormData(stream: InputStream, fileName: String, mimeType: String): ByteArray {
-        val fileBytes = stream.readBytes()
-        val sb = StringBuilder()
-        sb.append("--$BOUNDARY$LINE_END")
-        sb.append("Content-Disposition: form-data; name=\"file\"; filename=\"$fileName\"$LINE_END")
-        sb.append("Content-Type: $mimeType$LINE_END")
-        sb.append(LINE_END)
-        val header = sb.toString().toByteArray(Charsets.UTF_8)
+        val bytes = stream.readBytes()
+        val header = buildString {
+            append("--$BOUNDARY$LINE_END")
+            append("Content-Disposition: form-data; name=\"file\"; filename=\"$fileName\"$LINE_END")
+            append("Content-Type: $mimeType$LINE_END")
+            append(LINE_END)
+        }.toByteArray(Charsets.UTF_8)
         val footer = "$LINE_END--$BOUNDARY--$LINE_END".toByteArray(Charsets.UTF_8)
-        return header + fileBytes + footer
+        return header + bytes + footer
     }
 
     private fun getFileName(uri: Uri, mimeType: String): String {
-        // Try to get display name from content resolver
         val cursor = contentResolver.query(uri, null, null, null, null)
         cursor?.use {
             if (it.moveToFirst()) {
-                val nameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-                if (nameIndex >= 0) {
-                    return it.getString(nameIndex)
-                }
+                val idx = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                if (idx >= 0) return it.getString(idx)
             }
         }
-        // Fallback: generate from timestamp and mime type
         val ext = when {
             mimeType.startsWith("image/") -> ".jpg"
             mimeType.startsWith("video/") -> ".mp4"
