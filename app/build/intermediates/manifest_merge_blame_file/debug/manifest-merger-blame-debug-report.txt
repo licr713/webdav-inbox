@@ -1,0 +1,220 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.inbox.app"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="34" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/root/inbox-android/app/src/main/AndroidManifest.xml:4:5-67
+11-->/root/inbox-android/app/src/main/AndroidManifest.xml:4:22-64
+12    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+12-->/root/inbox-android/app/src/main/AndroidManifest.xml:5:5-79
+12-->/root/inbox-android/app/src/main/AndroidManifest.xml:5:22-76
+13
+14    <!-- 接收文件分享需要读写权限 -->
+15    <uses-permission
+15-->/root/inbox-android/app/src/main/AndroidManifest.xml:8:5-9:38
+16        android:name="android.permission.READ_EXTERNAL_STORAGE"
+16-->/root/inbox-android/app/src/main/AndroidManifest.xml:8:22-77
+17        android:maxSdkVersion="32" />
+17-->/root/inbox-android/app/src/main/AndroidManifest.xml:9:9-35
+18
+19    <permission
+19-->[androidx.core:core:1.12.0] /root/.gradle/caches/transforms-3/0d4ffc60e85a7c7f9fbeb27599893adc/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+20        android:name="com.inbox.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+20-->[androidx.core:core:1.12.0] /root/.gradle/caches/transforms-3/0d4ffc60e85a7c7f9fbeb27599893adc/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+21        android:protectionLevel="signature" />
+21-->[androidx.core:core:1.12.0] /root/.gradle/caches/transforms-3/0d4ffc60e85a7c7f9fbeb27599893adc/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
+22
+23    <uses-permission android:name="com.inbox.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+23-->[androidx.core:core:1.12.0] /root/.gradle/caches/transforms-3/0d4ffc60e85a7c7f9fbeb27599893adc/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+23-->[androidx.core:core:1.12.0] /root/.gradle/caches/transforms-3/0d4ffc60e85a7c7f9fbeb27599893adc/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+24
+25    <application
+25-->/root/inbox-android/app/src/main/AndroidManifest.xml:11:5-65:19
+26        android:allowBackup="true"
+26-->/root/inbox-android/app/src/main/AndroidManifest.xml:12:9-35
+27        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+27-->[androidx.core:core:1.12.0] /root/.gradle/caches/transforms-3/0d4ffc60e85a7c7f9fbeb27599893adc/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
+28        android:debuggable="true"
+29        android:extractNativeLibs="false"
+30        android:icon="@mipmap/ic_launcher"
+30-->/root/inbox-android/app/src/main/AndroidManifest.xml:13:9-43
+31        android:label="@string/app_name"
+31-->/root/inbox-android/app/src/main/AndroidManifest.xml:14:9-41
+32        android:networkSecurityConfig="@xml/network_security_config"
+32-->/root/inbox-android/app/src/main/AndroidManifest.xml:18:9-69
+33        android:supportsRtl="true"
+33-->/root/inbox-android/app/src/main/AndroidManifest.xml:15:9-35
+34        android:theme="@style/Theme.Inbox"
+34-->/root/inbox-android/app/src/main/AndroidManifest.xml:16:9-43
+35        android:usesCleartextTraffic="true" >
+35-->/root/inbox-android/app/src/main/AndroidManifest.xml:17:9-44
+36
+37        <!-- 主 Activity：WebView 显示收件箱 -->
+38        <activity
+38-->/root/inbox-android/app/src/main/AndroidManifest.xml:21:9-30:20
+39            android:name="com.inbox.app.MainActivity"
+39-->/root/inbox-android/app/src/main/AndroidManifest.xml:22:13-41
+40            android:configChanges="orientation|screenSize|keyboardHidden"
+40-->/root/inbox-android/app/src/main/AndroidManifest.xml:25:13-74
+41            android:exported="true"
+41-->/root/inbox-android/app/src/main/AndroidManifest.xml:23:13-36
+42            android:launchMode="singleTask" >
+42-->/root/inbox-android/app/src/main/AndroidManifest.xml:24:13-44
+43            <intent-filter>
+43-->/root/inbox-android/app/src/main/AndroidManifest.xml:26:13-29:29
+44                <action android:name="android.intent.action.MAIN" />
+44-->/root/inbox-android/app/src/main/AndroidManifest.xml:27:17-69
+44-->/root/inbox-android/app/src/main/AndroidManifest.xml:27:25-66
+45
+46                <category android:name="android.intent.category.LAUNCHER" />
+46-->/root/inbox-android/app/src/main/AndroidManifest.xml:28:17-77
+46-->/root/inbox-android/app/src/main/AndroidManifest.xml:28:27-74
+47            </intent-filter>
+48        </activity>
+49
+50        <!-- 分享接收 Activity：从其他 App 接收文字/链接/文件 -->
+51        <activity
+51-->/root/inbox-android/app/src/main/AndroidManifest.xml:33:9-63:20
+52            android:name="com.inbox.app.ShareReceiver"
+52-->/root/inbox-android/app/src/main/AndroidManifest.xml:34:13-42
+53            android:excludeFromRecents="true"
+53-->/root/inbox-android/app/src/main/AndroidManifest.xml:38:13-46
+54            android:exported="true"
+54-->/root/inbox-android/app/src/main/AndroidManifest.xml:35:13-36
+55            android:launchMode="singleTask"
+55-->/root/inbox-android/app/src/main/AndroidManifest.xml:36:13-44
+56            android:theme="@style/Theme.Inbox.Transparent" >
+56-->/root/inbox-android/app/src/main/AndroidManifest.xml:37:13-59
+57
+58            <!-- 接收文字/链接分享 -->
+59            <intent-filter>
+59-->/root/inbox-android/app/src/main/AndroidManifest.xml:41:13-45:29
+60                <action android:name="android.intent.action.SEND" />
+60-->/root/inbox-android/app/src/main/AndroidManifest.xml:42:17-69
+60-->/root/inbox-android/app/src/main/AndroidManifest.xml:42:25-66
+61
+62                <category android:name="android.intent.category.DEFAULT" />
+62-->/root/inbox-android/app/src/main/AndroidManifest.xml:43:17-76
+62-->/root/inbox-android/app/src/main/AndroidManifest.xml:43:27-73
+63
+64                <data android:mimeType="text/plain" />
+64-->/root/inbox-android/app/src/main/AndroidManifest.xml:44:17-55
+64-->/root/inbox-android/app/src/main/AndroidManifest.xml:44:23-52
+65            </intent-filter>
+66
+67            <!-- 接收单文件分享（图片/视频/音频/文档） -->
+68            <intent-filter>
+68-->/root/inbox-android/app/src/main/AndroidManifest.xml:48:13-55:29
+69                <action android:name="android.intent.action.SEND" />
+69-->/root/inbox-android/app/src/main/AndroidManifest.xml:42:17-69
+69-->/root/inbox-android/app/src/main/AndroidManifest.xml:42:25-66
+70
+71                <category android:name="android.intent.category.DEFAULT" />
+71-->/root/inbox-android/app/src/main/AndroidManifest.xml:43:17-76
+71-->/root/inbox-android/app/src/main/AndroidManifest.xml:43:27-73
+72
+73                <data android:mimeType="image/*" />
+73-->/root/inbox-android/app/src/main/AndroidManifest.xml:44:17-55
+73-->/root/inbox-android/app/src/main/AndroidManifest.xml:44:23-52
+74                <data android:mimeType="video/*" />
+74-->/root/inbox-android/app/src/main/AndroidManifest.xml:44:17-55
+74-->/root/inbox-android/app/src/main/AndroidManifest.xml:44:23-52
+75                <data android:mimeType="audio/*" />
+75-->/root/inbox-android/app/src/main/AndroidManifest.xml:44:17-55
+75-->/root/inbox-android/app/src/main/AndroidManifest.xml:44:23-52
+76                <data android:mimeType="application/*" />
+76-->/root/inbox-android/app/src/main/AndroidManifest.xml:44:17-55
+76-->/root/inbox-android/app/src/main/AndroidManifest.xml:44:23-52
+77            </intent-filter>
+78
+79            <!-- 接收多文件分享 -->
+80            <intent-filter>
+80-->/root/inbox-android/app/src/main/AndroidManifest.xml:58:13-62:29
+81                <action android:name="android.intent.action.SEND_MULTIPLE" />
+81-->/root/inbox-android/app/src/main/AndroidManifest.xml:59:17-78
+81-->/root/inbox-android/app/src/main/AndroidManifest.xml:59:25-75
+82
+83                <category android:name="android.intent.category.DEFAULT" />
+83-->/root/inbox-android/app/src/main/AndroidManifest.xml:43:17-76
+83-->/root/inbox-android/app/src/main/AndroidManifest.xml:43:27-73
+84
+85                <data android:mimeType="*/*" />
+85-->/root/inbox-android/app/src/main/AndroidManifest.xml:44:17-55
+85-->/root/inbox-android/app/src/main/AndroidManifest.xml:44:23-52
+86            </intent-filter>
+87        </activity>
+88
+89        <provider
+89-->[androidx.emoji2:emoji2:1.2.0] /root/.gradle/caches/transforms-3/0ddb9c379c67fcbab722e7078f3a6911/transformed/emoji2-1.2.0/AndroidManifest.xml:24:9-32:20
+90            android:name="androidx.startup.InitializationProvider"
+90-->[androidx.emoji2:emoji2:1.2.0] /root/.gradle/caches/transforms-3/0ddb9c379c67fcbab722e7078f3a6911/transformed/emoji2-1.2.0/AndroidManifest.xml:25:13-67
+91            android:authorities="com.inbox.app.androidx-startup"
+91-->[androidx.emoji2:emoji2:1.2.0] /root/.gradle/caches/transforms-3/0ddb9c379c67fcbab722e7078f3a6911/transformed/emoji2-1.2.0/AndroidManifest.xml:26:13-68
+92            android:exported="false" >
+92-->[androidx.emoji2:emoji2:1.2.0] /root/.gradle/caches/transforms-3/0ddb9c379c67fcbab722e7078f3a6911/transformed/emoji2-1.2.0/AndroidManifest.xml:27:13-37
+93            <meta-data
+93-->[androidx.emoji2:emoji2:1.2.0] /root/.gradle/caches/transforms-3/0ddb9c379c67fcbab722e7078f3a6911/transformed/emoji2-1.2.0/AndroidManifest.xml:29:13-31:52
+94                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+94-->[androidx.emoji2:emoji2:1.2.0] /root/.gradle/caches/transforms-3/0ddb9c379c67fcbab722e7078f3a6911/transformed/emoji2-1.2.0/AndroidManifest.xml:30:17-75
+95                android:value="androidx.startup" />
+95-->[androidx.emoji2:emoji2:1.2.0] /root/.gradle/caches/transforms-3/0ddb9c379c67fcbab722e7078f3a6911/transformed/emoji2-1.2.0/AndroidManifest.xml:31:17-49
+96            <meta-data
+96-->[androidx.lifecycle:lifecycle-process:2.6.1] /root/.gradle/caches/transforms-3/037feae25c324ecdb793b0bcf7c2dfa3/transformed/lifecycle-process-2.6.1/AndroidManifest.xml:29:13-31:52
+97                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+97-->[androidx.lifecycle:lifecycle-process:2.6.1] /root/.gradle/caches/transforms-3/037feae25c324ecdb793b0bcf7c2dfa3/transformed/lifecycle-process-2.6.1/AndroidManifest.xml:30:17-78
+98                android:value="androidx.startup" />
+98-->[androidx.lifecycle:lifecycle-process:2.6.1] /root/.gradle/caches/transforms-3/037feae25c324ecdb793b0bcf7c2dfa3/transformed/lifecycle-process-2.6.1/AndroidManifest.xml:31:17-49
+99            <meta-data
+99-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:29:13-31:52
+100                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+100-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:30:17-85
+101                android:value="androidx.startup" />
+101-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:31:17-49
+102        </provider>
+103
+104        <receiver
+104-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:34:9-52:20
+105            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+105-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:35:13-76
+106            android:directBootAware="false"
+106-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:36:13-44
+107            android:enabled="true"
+107-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:37:13-35
+108            android:exported="true"
+108-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:38:13-36
+109            android:permission="android.permission.DUMP" >
+109-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:39:13-57
+110            <intent-filter>
+110-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:40:13-42:29
+111                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+111-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:41:17-91
+111-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:41:25-88
+112            </intent-filter>
+113            <intent-filter>
+113-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:43:13-45:29
+114                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+114-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:44:17-85
+114-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:44:25-82
+115            </intent-filter>
+116            <intent-filter>
+116-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:46:13-48:29
+117                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+117-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:47:17-88
+117-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:47:25-85
+118            </intent-filter>
+119            <intent-filter>
+119-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:49:13-51:29
+120                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+120-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:50:17-95
+120-->[androidx.profileinstaller:profileinstaller:1.3.0] /root/.gradle/caches/transforms-3/96880c6b062bc21963958e8d695bed5e/transformed/profileinstaller-1.3.0/AndroidManifest.xml:50:25-92
+121            </intent-filter>
+122        </receiver>
+123    </application>
+124
+125</manifest>

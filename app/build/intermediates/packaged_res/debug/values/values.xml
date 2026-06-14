@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#0d1117</color>
+    <string name="app_name">收件箱</string>
+    <string name="inbox_url">https://inbox.oolool.com</string>
+    <string name="share_failed">存入失败</string>
+    <string name="share_success">已存入收件箱</string>
+    <style name="Theme.Inbox" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:statusBarColor">#0d1117</item>
+        <item name="android:navigationBarColor">#0d1117</item>
+    </style>
+    <style name="Theme.Inbox.Transparent" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+</resources>

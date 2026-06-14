@@ -1,0 +1,12 @@
+R_DEF: Internal format may change without notice
+local
+color ic_launcher_background
+drawable ic_launcher
+mipmap ic_launcher
+string app_name
+string inbox_url
+string share_failed
+string share_success
+style Theme.Inbox
+style Theme.Inbox.Transparent
+xml network_security_config
