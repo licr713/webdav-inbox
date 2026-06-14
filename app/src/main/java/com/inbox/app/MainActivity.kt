@@ -168,10 +168,11 @@ class MainActivity : AppCompatActivity() {
 
                 val fileName = "photo_${System.currentTimeMillis()}.jpg"
                 val boundary = "----InboxUpload"
-                val header = "--$boundary\r\n" +
-                        "Content-Disposition: form-data; name=\"file\"; filename=\"$fileName\"\r\n" +
-                        "Content-Type: image/jpeg\r\n\r\n"
-                val footer = "\r\n--$boundary--\r\n"
+                val data = (
+                    "--$boundary\r\n" +
+                    "Content-Disposition: form-data; name=\"file\"; filename=\"$fileName\"\r\n" +
+                    "Content-Type: image/jpeg\r\n\r\n"
+                ).toByteArray() + bytes + "\r\n--$boundary--\r\n".toByteArray()
 
                 val url = URL("https://inbox.oolool.com/api/inbox/share")
                 val conn = url.openConnection() as HttpURLConnection
@@ -180,12 +181,17 @@ class MainActivity : AppCompatActivity() {
                 conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
                 conn.connectTimeout = 30000
                 conn.readTimeout = 30000
-                DataOutputStream(conn.outputStream).use {
-                    it.write(header.toByteArray())
-                    it.write(bytes)
-                    it.write(footer.toByteArray())
-                }
-                val ok = conn.responseCode == 200
+                conn.setRequestProperty("Connection", "close")
+                val dos = DataOutputStream(conn.outputStream)
+                dos.write(data)
+                dos.flush()
+                dos.close()
+
+                val responseCode = conn.responseCode
+                // 读取响应体以释放连接
+                conn.inputStream.bufferedReader().readText()
+                conn.disconnect()
+                val ok = responseCode == 200
 
                 // 写记录
                 InboxDatabase(this).insert(HistoryEntry(
