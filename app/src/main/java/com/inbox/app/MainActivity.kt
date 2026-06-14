@@ -173,7 +173,7 @@ class MainActivity : AppCompatActivity() {
                         "Content-Type: image/jpeg\r\n\r\n"
                 val footer = "\r\n--$boundary--\r\n"
 
-                val url = URL("https://inbox.oolool.com/api/inbox/file")
+                val url = URL("https://inbox.oolool.com/api/inbox/share")
                 val conn = url.openConnection() as HttpURLConnection
                 conn.requestMethod = "POST"
                 conn.doOutput = true
