@@ -54,6 +54,14 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "需要相机权限才能拍照直传", Toast.LENGTH_SHORT).show()
     }
 
+    // 录音权限
+    private val requestAudio = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (!granted)
+            Toast.makeText(this, "需要麦克风权限才能录音", Toast.LENGTH_SHORT).show()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -63,6 +71,9 @@ class MainActivity : AppCompatActivity() {
         // 创建 WebView
         webView = WebView(this)
         setupWebView()
+
+        // 进入 WebView 前先请求麦克风权限（让 getUserMedia 可用）
+        requestAudioPermission()
 
         // 拍照按钮
         val cameraBtn = ImageButton(this).apply {
@@ -121,6 +132,8 @@ class MainActivity : AppCompatActivity() {
         settings.allowFileAccess = false
         settings.allowContentAccess = false
         settings.userAgentString = settings.userAgentString + " InboxApp/2.0"
+        // WebView 录音支持：允许 JS getUserMedia 无需用户手势
+        settings.mediaPlaybackRequiresUserGesture = false
 
         if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
             WebSettingsCompat.setForceDark(settings, WebSettingsCompat.FORCE_DARK_ON)
@@ -140,6 +153,15 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                     == PackageManager.PERMISSION_GRANTED -> dispatchTakePicture()
             else -> requestCamera.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    // ── 录音权限（供 WebView getUserMedia 使用）──
+
+    private fun requestAudioPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED) {
+            requestAudio.launch(Manifest.permission.RECORD_AUDIO)
         }
     }
 
